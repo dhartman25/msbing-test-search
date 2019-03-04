@@ -1,7 +1,7 @@
-#MicrosoftBingSearch - Edge/Chrome Mobile Emulator
+# MicrosoftBingSearch - Edge/Chrome Mobile Emulator
 Includes python/selenium scripts to open a browser at bing.com and execute a configured number of test searches.
 
-##Running MicrosoftBingSearch_Edge
+## Running MicrosoftBingSearch_Edge
 Opens Edge at bing.com executes configured number of searches
 1. Install python
 2. Ensure python is on your system path (you can open a command prompt and type `python`)
@@ -10,7 +10,7 @@ Opens Edge at bing.com executes configured number of searches
 	optional parameter `-driverPath` used if you have a different version of Windows, necessitating a different version of the driver
 	optional parameter `-numSearches` used to execute a custom number of searches. Defaults to 40.
 
-##Running MicrosoftBingSearch_ChromeMobile
+## Running MicrosoftBingSearch_ChromeMobile
 Opens Chrome at bing.com, opens devtools, toggles device toolbar to simulate mobile device, execute configured number of searches
 1. Install python
 2. Ensure python is on your system path (you can open a command prompt and type `python`)
@@ -28,7 +28,7 @@ Opens Chrome at bing.com, opens devtools, toggles device toolbar to simulate mob
 	optional parameter `-driverPath` used if you need to run a different version of Chrome
 	optional parameter `-numSearches` used to execute a custom number of searches. Defaults to 30.
 
-##Troubleshooting
+## Troubleshooting
 * If MS Edge won't open, you may need a different version of the MicrosoftWebDriver - https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
 * If issues occur with the supplied Chrome driver, you may need an updated version - http://chromedriver.chromium.org/downloads
 * Drivers can either be replaced in the "drivers" folder or the path can be supplied via -driverPath
