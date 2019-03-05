@@ -1,6 +1,6 @@
 import time
 import subprocess
-import configparser
+import json
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -23,7 +23,6 @@ else:
     print("Using driverPath supplied")
 print("chromedriverpath Path: " + chromedriverpath)
     
-    
 if number_of_searches is None:
     number_of_searches = 30
     print("No numSearches supplied. Using default of 30.")
@@ -32,18 +31,12 @@ else:
     print("Using numSearches supplied")
 print("Number of Searches: " + str(number_of_searches))
 
+#open config.json and get user_data_dir
+with open("config\\config.json") as json_data_file:
+    config = json.load(json_data_file)
 
-#get config values for chrome user data dir and ahk path
-config = configparser.ConfigParser()
-config.read("config\\config.ini")
-default = config["DEFAULT"]
-
-user_data_dir = default.get("user.data.dir")
+user_data_dir = config["user.data.dir"]
 print("user.data.dir: " + user_data_dir)
-
-ahk_path = default.get("ahk.path")
-print("ahk.path: " + ahk_path)
-
 
 #open chrome and get going!
 options = webdriver.ChromeOptions() 
@@ -51,15 +44,31 @@ options = webdriver.ChromeOptions()
 options.add_argument("user-data-dir=" + user_data_dir)
 browser = webdriver.Chrome(chromedriverpath, options=options)
 
-browser.get('http://www.bing.com');
+browser.get('http://www.bing.com')
 time.sleep(2)
 
-#open devtools
-subprocess.call([ahk_path,"ahk_scripts\\OpenChomeDevTools.ahk"])  
-time.sleep(2) #let dev tools open
-#toggle device toolbar to simulate mobile device
-subprocess.call([ahk_path,"ahk_scripts\\ToggleDeviceToolbarChrome.ahk"])
-time.sleep(2) #let device load
+#read config file for ahk install path
+ahk_path = config["ahk.path"]
+#if ahk path isn't supplied, go the easy route and use the exe's
+if (ahk_path is None or ahk_path == ""):
+    print("No ahk.path configured, using exe scripts")
+    #open devtools
+    subprocess.call(["ahk_scripts\\OpenChomeDevTools.exe"])  
+    time.sleep(2) #let dev tools open
+    #toggle device toolbar to simulate mobile device
+    subprocess.call(["ahk_scripts\\ToggleDeviceToolbarChrome.exe"])
+    time.sleep(2) #let device load
+#if an ahk path is supplied, use it
+else: 
+    print("ahk.path suppled: " + ahk_path + ", using ahk scripts")
+    #open devtools
+    subprocess.call([ahk_path,"ahk_scripts\\OpenChomeDevTools.ahk"])  
+    time.sleep(2) #let dev tools open
+    #toggle device toolbar to simulate mobile device
+    subprocess.call([ahk_path,"ahk_scripts\\ToggleDeviceToolbarChrome.ahk"])
+    time.sleep(2) #let device load
+
+
 browser.refresh()
 time.sleep(2)
 
@@ -77,7 +86,7 @@ for x in range(0, number_of_searches):
     searchbar.clear()
     searchbar.send_keys(searchText + str(x))
     #not using the search button anymore - for some reason in device mode the submit call gets lost
-    searchbar.send_keys(Keys.ENTER);
+    searchbar.send_keys(Keys.ENTER)
     #wait two second to give search time to load
     time.sleep(2)
 
