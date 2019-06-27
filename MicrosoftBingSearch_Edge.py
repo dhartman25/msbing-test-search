@@ -14,8 +14,8 @@ mswebdriverpath = args.driverPath
 number_of_searches = args.numSearches
 
 if mswebdriverpath is None:
-    mswebdriverpath = "drivers\\MicrosoftWebDriver.exe"
-    print("No driverPath supplied. Using default driver packaged.")
+    mswebdriverpath = "C:\\Windows\\SysWOW64\\MicrosoftWebDriver.exe"
+    print("No driverPath supplied. Using default Windows driver.")
 else:
     print("Using driverPath supplied")
 print("MicrosoftWebDriver Path: " + mswebdriverpath)
