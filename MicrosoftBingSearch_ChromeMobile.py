@@ -7,17 +7,23 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import argparse
+import os
+import platform
+
+print(platform.system())
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-driverPath", help="Relative or absolute path to chromedriver.exe. Defaults to included driver at the base.")
 parser.add_argument("-numSearches", help="Number of searches to perform. Defaults to 30.")
+parser.add_argument("-startNum", help="Number appended to 'test' to start at. Defaults to 0.")
 
 args=parser.parse_args()
 chromedriverpath = args.driverPath
 number_of_searches = args.numSearches
+start_number= args.startNum
 
 if chromedriverpath is None:
-    chromedriverpath = "drivers\\chromedriver.exe"
+    chromedriverpath = os.path.join('drivers', 'chromedriver.exe')
     print("No driverPath supplied. Using default driver packaged.")
 else:
     print("Using driverPath supplied")
@@ -31,8 +37,17 @@ else:
     print("Using numSearches supplied")
 print("Number of Searches: " + str(number_of_searches))
 
+if start_number is None:
+    start_number = 0
+    print("No startNum supplied. Using default of 0.")
+else:
+    start_number = int(start_number)
+    print("Using start_number supplied")
+print("Starting with number: " + str(start_number))
+
 #open config.json and get user_data_dir
-with open("config\\config.json") as json_data_file:
+config_path = os.path.join('config', 'config.json')
+with open(config_path) as json_data_file:
     config = json.load(json_data_file)
 
 user_data_dir = config["user.data.dir"]
@@ -53,10 +68,10 @@ ahk_path = config["ahk.path"]
 if (ahk_path is None or ahk_path == ""):
     print("No ahk.path configured, using exe scripts")
     #open devtools
-    subprocess.call(["ahk_scripts\\OpenChomeDevTools.exe"])  
+    subprocess.call([os.path.join('ahk_scripts', 'OpenChomeDevTools.exe')])  
     time.sleep(2) #let dev tools open
     #toggle device toolbar to simulate mobile device
-    subprocess.call(["ahk_scripts\\ToggleDeviceToolbarChrome.exe"])
+    subprocess.call([os.path.join('ahk_scripts', 'ToggleDeviceToolbarChrome.exe')])
     time.sleep(2) #let device load
 #if an ahk path is supplied, use it
 else: 
@@ -84,7 +99,7 @@ for x in range(0, number_of_searches):
         browser.close()
     searchbar = browser.find_element_by_id("sb_form_q")
     searchbar.clear()
-    searchbar.send_keys(searchText + str(x))
+    searchbar.send_keys(searchText + str(x + start_number))
     #not using the search button anymore - for some reason in device mode the submit call gets lost
     searchbar.send_keys(Keys.ENTER)
     #wait two second to give search time to load
