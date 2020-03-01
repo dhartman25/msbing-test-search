@@ -1,2 +1,0 @@
-Send, ^+i
-return
