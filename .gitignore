@@ -2,3 +2,4 @@
 .project
 .pydevproject
 debug.log
+__pycache__/**
