@@ -6,6 +6,7 @@ import os
 import platform
 from ParseArgsUtil import ParseArgs
 import SearchUtil
+import shutil
 
 print("Operating System: " + platform.system())
 
@@ -24,10 +25,13 @@ with open(config_path) as json_data_file:
 user_data_dir = config["user.data.dir"]
 print("user.data.dir: " + user_data_dir)
 
+user_data_dir_temp = user_data_dir + "_tmp"
+shutil.copytree(user_data_dir, user_data_dir_temp)
+
 #open chrome and get going!
 options = webdriver.ChromeOptions() 
 #Path to your chrome profile. Needed to use saved bing login session
-options.add_argument("user-data-dir=" + user_data_dir)
+options.add_argument("user-data-dir=" + user_data_dir_temp)
 browser = webdriver.Chrome(chromedriverpath, options=options)
 
 browser.get('http://www.bing.com')
@@ -61,5 +65,7 @@ time.sleep(2)
 searchText = "test"
 
 SearchUtil.runSearches(browser,searchText, number_of_searches, start_number)
+
+shutil.rmtree(user_data_dir_temp, ignore_errors=True)
 
 browser.close()
