@@ -1,3 +1,4 @@
+from genericpath import isdir
 import time
 import subprocess
 import json
@@ -7,8 +8,13 @@ import platform
 from ParseArgsUtil import ParseArgs
 import SearchUtil
 import shutil
+import socket
+from appscript import app
+from appscript import k
 
-print("Operating System: " + platform.system())
+
+parentOS = platform.system()
+print("Operating System: " + parentOS)
 
 parseargs = ParseArgs()
 
@@ -18,14 +24,20 @@ start_number = parseargs.getStartNum()
 use_mobile = parseargs.getUseMobile()
 
 #open config.json and get user_data_dir
-config_path = os.path.join('config', 'config.json')
+config_path = os.path.join('config', 'config-' + socket.gethostname() + '.json')
 with open(config_path) as json_data_file:
     config = json.load(json_data_file)
 
 user_data_dir = config["user.data.dir"]
 print("user.data.dir: " + user_data_dir)
-
 user_data_dir_temp = user_data_dir + "_tmp"
+
+#do a little pre-cleanup if things didn't shut down properly last time
+if (os.path.isdir(user_data_dir_temp)):
+    print("Cleaning up tmp data dir")
+    shutil.rmtree(user_data_dir_temp, ignore_errors=True, onerror=None)
+
+#copy the user data dir to a temp location, otherwise the next run will encounter locks
 shutil.copytree(user_data_dir, user_data_dir_temp)
 
 #open chrome and get going!
@@ -40,14 +52,28 @@ time.sleep(2)
 if (use_mobile):
     #read config file for ahk install path
     ahk_path = config["ahk.path"]
-    #if ahk path isn't supplied, go the easy route and use the exe's
+    #if ahk path isn't supplied, use what the tool comes with
     if (ahk_path is None or ahk_path == ""):
-        print("No ahk.path configured, using exe scripts")
-        #open devtools
-        subprocess.call([os.path.join('ahk_scripts', 'OpenChromeDevTools.exe')])  
-        time.sleep(2) #let dev tools open
-        #toggle device toolbar to simulate mobile device
-        subprocess.call([os.path.join('ahk_scripts', 'ToggleDeviceToolbarChrome.exe')])
+        print("No ahk.path configured, using built in scripts")
+
+        if (parentOS == "Windows"):
+            #open devtools
+            subprocess.call([os.path.join('ahk_scripts', 'OpenChromeDevTools.exe')])  
+            time.sleep(2) #let dev tools open
+            #toggle device toolbar to simulate mobile device
+            subprocess.call([os.path.join('ahk_scripts', 'ToggleDeviceToolbarChrome.exe')])
+
+        elif (parentOS == "Darwin"):
+            #open devtools
+            #hit cmd + option + i
+            #k is a subpackage of appscript
+            app('System Events').keystroke('i', using=[k.command_down, k.option_down])
+            time.sleep(2) #let dev tools open
+            app('System Events').keystroke('m', using=[k.command_down, k.shift_down])
+
+        else: 
+            print ("Whoops, don't have a solution for your OS!")
+
         time.sleep(2) #let device load
     #if an ahk path is supplied, use it
     else: 
@@ -66,6 +92,7 @@ searchText = "test"
 
 SearchUtil.runSearches(browser,searchText, number_of_searches, start_number)
 
-shutil.rmtree(user_data_dir_temp, ignore_errors=True)
-
 browser.close()
+
+#cleanup - delete the tmp user data dir so that we can start again next run
+shutil.rmtree(user_data_dir_temp, ignore_errors=True, onerror=None)
